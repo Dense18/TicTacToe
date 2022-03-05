@@ -4,13 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -21,13 +15,31 @@ import ca.cmpt276.project.tictactoe.model.Cell;
 import ca.cmpt276.project.tictactoe.model.TicTacToeGame;
 
 public class TicTacToeScreen extends AppCompatActivity {
+
+    //Types of mode available for the game
+    public enum GameMode {
+        TWO_PLAYER(0),
+        COMPUTER(1);
+
+        private final int value;
+
+        GameMode(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    TicTacToeGame ticTacGame;
+
     TableLayout grid;
     Button gridButton[][];
 
-    int num_size = 3;
-    TicTacToeGame ticTacGame;
-
     boolean playerTurn = true;
+    int mode;
+    int num_size;
 
     //Make intent for this activity
     public static Intent makeIntent(Context context) {
@@ -39,10 +51,19 @@ public class TicTacToeScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tic_tac_toe_screen);
 
+        num_size = Settings.getSize(this);
+        mode = Settings.getMode(this);
+
         ticTacGame = new TicTacToeGame(num_size);
         gridButton = new Button[num_size][num_size];
         populateGrid();
+
+        if(mode == GameMode.COMPUTER.getValue()){
+            AiMove();
+        }
     }
+
+    ///--------------------------Create Board grid-------------------------///
 
     private void populateGrid(){
         grid = findViewById(R.id.grid);
@@ -68,38 +89,6 @@ public class TicTacToeScreen extends AppCompatActivity {
                 button.setAutoSizeTextTypeWithDefaults(TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
 
                 gridButton[row][col] = button;
-
-                /*
-                button.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        button.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        Cell cell = ticTacGame.getCell(final_row,final_col);
-                        //lockButtonSizes();
-
-                        //Set button images and settings after button is fully created
-                        if(!cell.isHidden()){
-                            if(cell.isInfected()){
-                                setImageToButton(final_row,final_col,R.drawable.infected);
-                                button.setClickable(true);
-
-                                if(cell.isScanShown()){
-                                    button.setClickable(false);
-                                }
-                            }
-
-                            else{
-                                setImageToButton(final_row,final_col,R.drawable.healthy);
-                                button.setClickable(false);
-                            }
-                        }
-                        else{
-                            setImageToButton(final_row,final_col,R.drawable.unknown);
-                        }
-                        updateScan();
-                    }
-                });
-                 */
                 button.setLayoutParams(new TableRow.LayoutParams(
                         TableRow.LayoutParams.MATCH_PARENT,
                         TableRow.LayoutParams.MATCH_PARENT,
@@ -110,7 +99,7 @@ public class TicTacToeScreen extends AppCompatActivity {
             }
         }
 
-        AiMove();
+
 
     }
 
@@ -131,34 +120,16 @@ public class TicTacToeScreen extends AppCompatActivity {
             button.setText("O");
         }
 
-        //Change player's turn
-        //playerTurn = !playerTurn;
-
-        if (!checkGameOver()){
-            AiMove();
+        if(mode == GameMode.TWO_PLAYER.getValue()){
+            playerTurn = !playerTurn;
             checkGameOver();
         }
-
-    }
-
-    public boolean checkGameOver(){
-        //Get the winner's symbol if available
-        Cell.Symbol playerSym;
-        playerSym = ticTacGame.checkWinner();
-
-        if (playerSym!= null){
-            ticTacGame.setGameOver();
-            Toast.makeText(this, playerSym.toString() + " has won", Toast.LENGTH_SHORT).show();
-            return true;
+        else{
+            if (!checkGameOver()){
+                AiMove();
+                checkGameOver();
+            }
         }
-
-        if(ticTacGame.isFull()){
-            ticTacGame.setGameOver();
-            Toast.makeText(this, "It's a tie!", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
-        return false;
     }
 
     private void lockButtonSizes() {
@@ -177,19 +148,7 @@ public class TicTacToeScreen extends AppCompatActivity {
         }
     }
 
-    //Set and scale images to the buttons
-    private void setImageToButton(int row, int col,  int rid){
-        Button button = gridButton[row][col];
-        int newWidth = button.getWidth();
-        int newHeight = button.getHeight();
-
-        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), rid);
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
-
-        Resources resource = getResources();
-        button.setBackground(new BitmapDrawable(resource, scaledBitmap));
-
-    }
+    ///--------------------------Functions for A.I-------------------------///
 
     private void AiMove(){
         int bestScore = -99999;
@@ -198,6 +157,7 @@ public class TicTacToeScreen extends AppCompatActivity {
 
         for (int i = 0; i < num_size; i++){
             for (int j = 0; j < num_size; j++){
+
                 //Check if the spot is available
                 if (!ticTacGame.hasSymbol(i,j)){
                     ticTacGame.setSymbol(i,j, Cell.Symbol.O);
@@ -205,6 +165,7 @@ public class TicTacToeScreen extends AppCompatActivity {
                     int score = minimax(ticTacGame, 0, false);
                     ticTacGame.setSymbol(i,j, Cell.Symbol.Empty);
 
+                    //Update score if a better score is revealed, and store the positions
                     if (score > bestScore){
                         bestScore = score;
                         bestMove_X = i;
@@ -214,8 +175,6 @@ public class TicTacToeScreen extends AppCompatActivity {
             }
         }
 
-        Log.i("cc", String.valueOf(bestMove_X));
-        Log.i("cc", String.valueOf(bestMove_Y));
         ticTacGame.setSymbol(bestMove_X,bestMove_Y, Cell.Symbol.O);
         gridButton[bestMove_X][bestMove_Y].setText("O");
         playerTurn = true;
@@ -250,7 +209,7 @@ public class TicTacToeScreen extends AppCompatActivity {
                         int score = minimax(ticTacGame, depth + 1, false);
                         ticTacGame.setSymbol(i,j, Cell.Symbol.Empty);
 
-                        bestScore = max(score, bestScore);
+                        bestScore = Math.max(score, bestScore);
                     }
                 }
             }
@@ -269,26 +228,32 @@ public class TicTacToeScreen extends AppCompatActivity {
                         int score = minimax(ticTacGame, depth + 1, true);
                         ticTacGame.setSymbol(i,j, Cell.Symbol.Empty);
 
-                        bestScore = min(score, bestScore);
+                        bestScore = Math.min(score, bestScore);
                     }
                 }
             }
             return bestScore;
         }
-
     }
 
-    private int max(int x, int y){
-        if (x > y){
-            return x;
-        }
-        return y;
-    }
+    ///--------------------------Functions for A.I-------------------------///
+    public boolean checkGameOver(){
+        //Get the winner's symbol if available
+        Cell.Symbol playerSym;
+        playerSym = ticTacGame.checkWinner();
 
-    private int min(int x, int y){
-        if (x < y){
-            return x;
+        if (playerSym!= null){
+            ticTacGame.setGameOver();
+            Toast.makeText(this, playerSym.toString() + " has won", Toast.LENGTH_SHORT).show();
+            return true;
         }
-        return  y;
+
+        if(ticTacGame.isFull()){
+            ticTacGame.setGameOver();
+            Toast.makeText(this, "It's a tie!", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        return false;
     }
 }

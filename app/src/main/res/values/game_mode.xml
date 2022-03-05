@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="game_mode">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+
+    <integer name="default_mode">0</integer>
+
+</resources>

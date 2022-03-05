@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TicTacToe">
         <activity
+            android:name=".Settings"
+            android:exported="true" />
+        <activity
             android:name=".TicTacToeScreen"
             android:exported="true" />
         <activity

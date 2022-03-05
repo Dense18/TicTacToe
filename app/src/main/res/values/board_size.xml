@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="board_size">
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </integer-array>>
+
+    <integer name="default_size">3</integer>
+</resources>

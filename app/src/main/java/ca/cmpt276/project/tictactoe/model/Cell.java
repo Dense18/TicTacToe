@@ -1,12 +1,12 @@
 package ca.cmpt276.project.tictactoe.model;
 
+//Class that contains each cell's information of the TicTacToe board
 public class Cell {
 
-    //Try think of a way to assign int to the symbol
     public enum Symbol{
         X,
         O,
-        Empty;
+        Empty
     }
 
     Symbol sym;
@@ -21,14 +21,6 @@ public class Cell {
 
     public Symbol getSymbol(){
         return sym;
-    }
-
-    public void setO(){
-        sym = Symbol.O;
-    }
-
-    public Symbol setX(){
-        return Symbol.X;
     }
 
     public boolean hasSymbol(){

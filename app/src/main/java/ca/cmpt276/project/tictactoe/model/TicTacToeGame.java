@@ -1,7 +1,6 @@
 package ca.cmpt276.project.tictactoe.model;
 
-import android.util.Log;
-
+//Class to handle information regarding the TicToeGame
 public class TicTacToeGame {
     int size;
     Cell grid[][];
@@ -86,11 +85,11 @@ public class TicTacToeGame {
             }
         }
 
-        return null;
-    }
+        if(flag){
+            return grid[0][size - 1].getSymbol();
+        }
 
-    public boolean isFull(){
-        return numElement >= size * size;
+        return null;
     }
 
     public boolean hasSymbol(int x, int y){
@@ -117,19 +116,18 @@ public class TicTacToeGame {
 
         }
 
-
-
-
-
     }
 
     public void setGameOver(){
         isOver = true;
     }
 
+    public boolean isFull(){
+        return numElement >= size * size;
+    }
+
     public boolean isOver(){
         return isOver;
     }
-
 
 }

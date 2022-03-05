@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">TicTacToe</string>
+    <string name="board_size">%1$d rows x %1$d cols </string>
+    <string name="board_size_text">Board Size </string>
+    <string name="game_mode">Game Mode</string>
+    <string name="start">Start</string>
+    <string name="settings">Settings</string>
 </resources>
